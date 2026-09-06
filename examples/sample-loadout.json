@@ -1,0 +1,49 @@
+{
+  "version": 3,
+  "savedAt": "2026-09-06T22:07:16.320Z",
+  "stock": {
+    "i-food": "245010",
+    "i-gm": "695",
+    "i-np": "129",
+    "i-pm": "2",
+    "i-chest": "191"
+  },
+  "roster": [
+    {
+      "pet": "Ironclad War Elephant",
+      "lvl": 31,
+      "adv": false,
+      "on": true
+    },
+    {
+      "pet": "Regal White Lion",
+      "lvl": 31,
+      "adv": false,
+      "on": true
+    },
+    {
+      "pet": "Alpha Black Panther",
+      "lvl": 90,
+      "adv": false,
+      "on": true
+    },
+    {
+      "pet": "Mighty Bison",
+      "lvl": 80,
+      "adv": false,
+      "on": true
+    },
+    {
+      "pet": "Giant Rhino",
+      "lvl": 81,
+      "adv": false,
+      "on": true
+    },
+    {
+      "pet": "Ironclad War Bear",
+      "lvl": 100,
+      "adv": false,
+      "on": true
+    }
+  ]
+}

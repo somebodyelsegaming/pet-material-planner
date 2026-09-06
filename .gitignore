@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Working notes from the build session. Kept local on purpose: they are
+# written around a real account's material counts and pet levels, and read
+# as a record of a conversation rather than project documentation.
+# The durable design rationale belongs in a committed doc of its own.
+SESSION-*

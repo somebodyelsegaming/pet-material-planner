@@ -1,0 +1,726 @@
+<title>Pet Material Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;800&family=JetBrains+Mono:wght@400;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  --ground:#E9EDF1; --surface:#FFFFFF; --surface-2:#F2F5F8;
+  --line:#CBD5DF; --line-soft:#DEE5EC;
+  --text:#161D25; --text-2:#4A5866; --text-3:#778694;
+  --manual:#A64B32; --potion:#2E7D6B; --medal:#B0851F; --food:#6E6047; --chest:#5B6B7C;
+  --good:#2E7D4F; --bad:#A63A2E; --accent:#B0851F;
+  --shadow:0 1px 2px rgba(22,29,37,.06),0 4px 14px rgba(22,29,37,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1319; --surface:#151D25; --surface-2:#1B242D;
+    --line:#2C3945; --line-soft:#232E39;
+    --text:#E4EAF0; --text-2:#A3B1BE; --text-3:#7B8996;
+    --manual:#D9765A; --potion:#4FB89F; --medal:#DBAE45; --food:#A89575; --chest:#93A6B8;
+    --good:#4FB37A; --bad:#DE7060; --accent:#DBAE45;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D1319; --surface:#151D25; --surface-2:#1B242D;
+  --line:#2C3945; --line-soft:#232E39;
+  --text:#E4EAF0; --text-2:#A3B1BE; --text-3:#7B8996;
+  --manual:#D9765A; --potion:#4FB89F; --medal:#DBAE45; --food:#A89575; --chest:#93A6B8;
+  --good:#4FB37A; --bad:#DE7060; --accent:#DBAE45;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.28);
+}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--text);
+  font-family:"Source Sans 3",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:15px;line-height:1.55;margin:0;padding:28px 20px 72px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+
+h1,h2,h3{font-family:Bitter,Georgia,serif;margin:0}
+h1{text-wrap:balance}
+h2,h3{text-wrap:pretty}
+p{text-wrap:pretty}
+h1{font-size:clamp(28px,4.4vw,42px);font-weight:800;letter-spacing:-.015em;line-height:1.1}
+h2{font-size:21px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:15px;font-weight:600}
+.eyebrow{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+header{display:flex;flex-direction:column;gap:10px;border-bottom:2px solid var(--text);padding-bottom:18px}
+header p{margin:0;color:var(--text-2);font-size:16px}
+header p b{color:var(--text);font-weight:600}
+
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);
+  padding:18px 20px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.verdict h2{font-size:18px}
+.verdict p{margin:0;color:var(--text-2)}
+.verdict strong{color:var(--text)}
+
+.panel{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.panel-head .hint{font-size:13px;color:var(--text-3);margin:0}
+.panel-body{padding:18px;display:flex;flex-direction:column;gap:14px}
+
+/* collapsible */
+details.panel > summary{padding:14px 18px;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+details.panel > summary::-webkit-details-marker{display:none}
+details.panel > summary .chev{color:var(--text-3);font-size:12px;transition:transform .15s ease;flex:none}
+details.panel[open] > summary{border-bottom:1px solid var(--line-soft)}
+details.panel[open] > summary .chev{transform:rotate(90deg)}
+details.panel > summary h2{flex:none}
+details.panel > summary .hint{font-size:13px;color:var(--text-3);margin:0;flex:1 1 auto;min-width:0}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (prefers-reduced-motion:reduce){details.panel > summary .chev{transition:none}}
+
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);
+  display:flex;align-items:center;gap:6px}
+.swatch{width:9px;height:9px;border-radius:2px;flex:none}
+input[type=number],select,textarea{font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-variant-numeric:tabular-nums;font-size:15px;padding:8px 10px;width:100%;
+  background:var(--surface-2);color:var(--text);border:1px solid var(--line);border-radius:3px}
+select{font-family:"Source Sans 3",sans-serif}
+input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--accent);outline-offset:1px}
+
+table{border-collapse:collapse;width:100%}
+.scroll{overflow-x:auto}
+th{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;font-weight:400;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);
+  text-align:left;padding:0 10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.r,td.r{text-align:right}
+td{padding:8px 10px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.roster select{min-width:200px}
+.roster input[type=number]{width:78px}
+button{font-family:"Source Sans 3",sans-serif;font-size:13.5px;font-weight:600;
+  background:var(--surface-2);color:var(--text);border:1px solid var(--line);
+  border-radius:3px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.ghost{background:none;border-color:transparent;color:var(--text-3);padding:4px 8px;font-size:16px;line-height:1}
+button.ghost:hover{color:var(--bad);border-color:var(--line)}
+
+.objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;align-items:start}
+.obj{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);display:flex;flex-direction:column}
+.obj.lead{border-color:var(--accent);border-width:2px}
+.obj-top{padding:14px 16px 12px;border-bottom:1px solid var(--line-soft);display:flex;flex-direction:column;gap:3px}
+.obj-top .tag{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 7px;border-radius:99px;
+  background:var(--accent);color:var(--ground);font-weight:700}
+.obj-top h3{font-size:16px;font-family:Bitter,serif;font-weight:700}
+.obj-top .sub{font-size:13px;color:var(--text-3);margin:0}
+.obj-body{padding:14px 16px;display:flex;flex-direction:column;gap:13px;flex:1}
+.headline .big{font-family:Bitter,serif;font-size:31px;font-weight:800;line-height:1.05;display:block}
+.headline .unit{font-size:13px;color:var(--text-3)}
+.plan-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.plan-list li{display:flex;justify-content:space-between;gap:10px;color:var(--text-2)}
+.plan-list li b{color:var(--text);font-weight:600;white-space:nowrap}
+.split{display:flex;flex-direction:column;gap:7px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.split-row{display:flex;align-items:center;gap:9px;font-size:14px}
+.split-row .nm{flex:1;color:var(--text-2)}
+.split-row .qty{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;font-weight:700}
+.leftover{font-size:13px;color:var(--text-3);padding-top:9px;border-top:1px dashed var(--line-soft)}
+.leftover b{color:var(--text-2)}
+
+.bar{height:7px;background:var(--surface-2);border-radius:99px;overflow:hidden;min-width:48px;flex:1}
+.bar span{display:block;height:100%;border-radius:99px}
+@media (prefers-reduced-motion:no-preference){.bar span{transition:width .25s ease}}
+
+.note{font-size:13.5px;color:var(--text-3);margin:0}
+.note b{color:var(--text-2);font-weight:600}
+.foot{font-size:13px;color:var(--text-3);border-top:1px solid var(--line);padding-top:16px}
+.foot a{color:var(--accent)}
+.blocked{color:var(--bad)} .ok{color:var(--good)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--text-3)}
+.legend span{display:flex;align-items:center;gap:6px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Kingshot · Pet Advancement</div>
+  <h1>Pet Material Planner</h1>
+  <p>Every Advance charges <b>Pet Food</b>, <b>Growth Manuals</b>, <b>Nutrient Potions</b> and <b>Promotion Medallions</b> at once, so a shortage of any one stalls the gate. <b>Pet Chests</b> are potential materials — each opens into <b>7 Manuals</b>, <b>2 Potions</b>, or <b>1 Medallion</b>.</p>
+  <p>Enter what is on hand; this finds where it goes furthest — which Advances are reachable, how many chests to open and as what, and how many to keep. Nothing leaves this browser.</p>
+</header>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Materials on hand</h2>
+    <p class="hint">Everything recalculates as you type.</p>
+  </div>
+  <div class="panel-body">
+    <div class="res-grid">
+      <div class="field"><label><span class="swatch" style="background:var(--food)"></span>Pet Food</label><input type="number" id="i-food" min="0" value="0" autocomplete="off"></div>
+      <div class="field"><label><span class="swatch" style="background:var(--manual)"></span>Growth Manual</label><input type="number" id="i-gm" min="0" value="0" autocomplete="off"></div>
+      <div class="field"><label><span class="swatch" style="background:var(--potion)"></span>Nutrient Potion</label><input type="number" id="i-np" min="0" value="0" autocomplete="off"></div>
+      <div class="field"><label><span class="swatch" style="background:var(--medal)"></span>Promotion Medallion</label><input type="number" id="i-pm" min="0" value="0" autocomplete="off"></div>
+      <div class="field"><label><span class="swatch" style="background:var(--chest)"></span>Pet Chest</label><input type="number" id="i-chest" min="0" value="0" autocomplete="off"></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Pets</h2>
+    <p class="hint">Fed to a milestone but not yet ascended? Leave <b>Ascended</b> unticked — that Advance is still owed, and needs no further food.</p>
+  </div>
+  <div class="panel-body">
+    <div class="scroll">
+      <table class="roster">
+        <thead><tr><th>Plan it?</th><th>Pet</th><th class="r">Level</th><th class="r">Max</th><th>Ascended?</th><th>Advances still owed</th><th></th></tr></thead>
+        <tbody id="roster"></tbody>
+      </table>
+    </div>
+    <div><button id="add">+ Add pet</button></div>
+    <p class="note"><b>Untick a pet to leave it out.</b> Not every pet earns its materials back. A combat pet's Advance pays off the next fight; an economy pet has to recoup its cost over time, and a few hundred more a day against six figures of Pet Food takes years. List the pets carrying your gameplay now.</p>
+  </div>
+</section>
+
+<details class="panel" id="d-save">
+  <summary><span class="chev">▶</span><h2>Save &amp; restore</h2><p class="hint" id="save-status">Saved in this browser</p></summary>
+  <div class="panel-body">
+    <p class="note">Saves automatically in this browser. Export a JSON file for a backup or to move devices. <b>Clear everything</b> wipes the saved stock and pets and starts over.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="export">Export JSON</button>
+      <button id="show-import">Paste a saved loadout</button>
+      <button id="reset">Clear everything</button>
+    </div>
+    <div id="import-box" hidden style="display:flex;flex-direction:column;gap:9px">
+      <textarea id="import-text" rows="5" spellcheck="false" style="font-size:12.5px;resize:vertical"
+        placeholder="Paste the contents of an exported .json file here, then press Load."></textarea>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button id="do-import">Load</button>
+        <span id="import-msg" style="font-size:13px;color:var(--text-3)"></span>
+      </div>
+    </div>
+  </div>
+</details>
+
+<div class="verdict">
+  <h2 id="v-title">Enter a stock above and the solver runs.</h2>
+  <p id="v-body"></p>
+  <p class="note" style="margin-top:2px">Chests cover only the shortfall — materials on hand are spent first. Pet Food is the one thing no chest can mint.</p>
+</div>
+
+<div class="verdict" id="free-box" hidden style="border-left-color:var(--good)"></div>
+
+<section style="display:flex;flex-direction:column;gap:14px">
+  <div>
+    <div class="eyebrow">Three ways to spend the same stock</div>
+    <h2>Courses of action</h2>
+    <p class="note" style="margin-top:6px">Three answers to three different questions — none is <em>the</em> answer, because that depends on what the account needs. Worth running in steps: take one option, update the numbers above, and see what the next round opens up.</p>
+  </div>
+  <div class="objs" id="objs"></div>
+  <p class="note" id="obj-note"></p>
+</section>
+
+<details class="panel" id="d-eff">
+  <summary><span class="chev">▶</span><h2>What each Advance costs</h2><p class="hint">The raw price of every gate, by generation.</p></summary>
+  <div class="panel-body">
+    <div class="field" style="max-width:280px">
+      <label>Generation</label>
+      <select id="gen-pick"></select>
+    </div>
+    <p class="note">Manuals, Potions and Medallions are the price of <b>that one Advance</b>, not a running total — the Advance to 100 costs 730 Manuals by itself. <b>Food, this step</b> is the food burned crossing those ten levels; <b>Food, running total</b> is everything eaten by the time a pet stands there.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Advance to</th><th class="r">Food, this step</th><th class="r">Manuals</th><th class="r">Potions</th><th class="r">Medallions</th><th class="r">KvK points</th><th style="width:130px">This step vs the others</th><th class="r">Food, running total</th><th class="r">Chest-equiv.</th></tr></thead>
+        <tbody id="eff"></tbody>
+      </table>
+    </div>
+    <p class="note"><b>Chest-equivalent</b> prices one Advance's materials in chests, starting from nothing. A comparison aid only — the planner above spends real stock first.</p>
+  </div>
+</details>
+
+<details class="panel" id="d-dim">
+  <summary><span class="chev">▶</span><h2>Where the value sits</h2><p class="hint">Milestones unlocked against the total materials a full climb costs.</p></summary>
+  <div class="panel-body">
+    <p class="note" id="dim-note"></p>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--accent)"></span>share of Advance milestones unlocked</span>
+      <span><span class="swatch" style="background:var(--chest)"></span>share of total materials invested</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th>At level</th><th class="r">Advances</th>
+          <th style="width:200px">Value unlocked vs materials invested</th>
+          <th class="r">Food</th><th class="r">Manuals</th><th class="r">Potions</th><th class="r">Medallions</th>
+          </tr></thead>
+        <tbody id="dim"></tbody>
+      </table>
+    </div>
+    <p class="note"><b>Reading a row:</b> every percentage is a share of the <em>whole</em> climb to max level for one pet, not of anything owned. "6 of 10 at 23%" means six milestones unlocked for under a quarter of what that pet will ever eat. The invested figure averages the four material shares so none dominates; the columns beside it show how sharply they diverge — Medallions appear only from the Advance to 50.</p>
+    <p class="note" style="color:var(--text-3)"><b>Caveat:</b> this counts Advance milestones, not raw stats, which the cost tables do not carry. If late Advances grant outsized stats, the real curve is flatter than shown.</p>
+  </div>
+</details>
+
+<details class="panel" id="d-future">
+  <summary><span class="chev">▶</span><h2>How far could a new pet get?</h2><p class="hint">Starting a fresh SR or mythic pet at level 1, on what is on hand.</p></summary>
+  <div class="panel-body">
+    <p class="note" id="future-note"></p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Take it to</th><th class="r">Pet Food</th><th class="r">Manuals</th><th class="r">Potions</th><th class="r">Medallions</th><th class="r">Chests needed now</th><th>Chest mix to bank</th><th class="r">Within reach</th></tr></thead>
+        <tbody id="future"></tbody>
+      </table>
+    </div>
+    <p class="note"><b>Chests needed now</b> prices only the shortfall after current stock. <b>Chest mix to bank</b> assumes starting from nothing — what to hoard toward a pet that has not arrived yet.</p>
+  </div>
+</details>
+
+<p class="foot">Cost tables from the <a href="https://kingshotoptimizer.com/database/pets/">Kingshot Optimizer pets database</a>, verified against its published totals (2,990 Manuals, 600 Potions, 310 Medallions and 834,625 Pet Food for a Gen 4-7 pet from 1 to 100). That source lists one shared score for SG and KvK; it is labelled KvK here. Food is spread evenly across the ten levels between Advances, so a level partway between them is accurate to within a few hundred food.</p>
+
+</div>
+
+<script>
+"use strict";
+// rows: [advanceTo, cumulativeFood, growthManual, nutrientPotion, promotionMedallion, kvkPoints]
+const TABLES = {
+  g1a:{label:"Generation 1 · Gray Wolf (max 50)", max:50, rows:[
+    [10,1715,15,0,0,25000],[20,4895,30,0,0,50000],[30,9905,45,10,0,100000],
+    [40,17565,60,20,0,150000],[50,28865,90,30,10,225000]]},
+  g1b:{label:"Generation 1 · Lynx, Bison (max 60)", max:60, rows:[
+    [10,2530,20,0,0,25000],[20,7890,40,0,0,50000],[30,16910,60,10,0,100000],
+    [40,31230,90,20,0,150000],[50,52850,130,20,10,225000],[60,83770,175,50,20,337500]]},
+  g2:{label:"Generation 2 · Moose, Cheetah (max 70)", max:70, rows:[
+    [10,3795,25,0,0,25000],[20,11835,50,0,0,50000],[30,25365,75,10,0,100000],
+    [40,46845,100,20,0,150000],[50,79275,155,30,10,225000],[60,125655,200,50,20,337500],
+    [70,188955,255,80,40,500000]]},
+  g3:{label:"Generation 3 · Lion, Grizzly Bear (max 80)", max:80, rows:[
+    [10,5060,30,0,0,25000],[20,15780,60,0,0,50000],[30,33820,95,10,0,100000],
+    [40,62460,125,20,0,150000],[50,105700,190,30,10,225000],[60,167540,250,50,20,337500],
+    [70,251940,310,80,40,500000],[80,360420,380,100,60,600000]]},
+  g4:{label:"Generations 4-7 · all max-100 pets", max:100, rows:[
+    [10,6325,35,0,0,25000],[20,19725,70,0,0,50000],[30,42275,110,15,0,100000],
+    [40,78075,145,35,0,150000],[50,132125,220,50,10,225000],[60,209425,290,65,20,337500],
+    [70,314925,365,85,40,500000],[80,450525,440,100,60,600000],
+    [90,622525,585,115,80,725000],[100,834625,730,135,100,875000]]}
+};
+const PETLIST = [
+  ["Gray Wolf","g1a"],["Lynx","g1b"],["Bison","g1b"],["Moose","g2"],["Cheetah","g2"],
+  ["Lion","g3"],["Grizzly Bear","g3"],
+  ["Mighty Bison","g4"],["Giant Rhino","g4"],["Alpha Black Panther","g4"],["Great Moose","g4"],
+  ["Regal White Lion","g4"],["Ironclad War Elephant","g4"],["Ironclad War Bear","g4"],
+  ["Future SR / mythic pet","g4"]
+];
+
+// adv = the Advance AT this level has already been taken.
+// Only meaningful when the level is a multiple of 10.
+let roster = [];
+const STOCK_KEYS=["i-food","i-gm","i-np","i-pm","i-chest"];
+const SAVE_KEY="kingshot-pet-material-planner-v3";
+
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+const pct=x=>(x*100).toFixed(x<0.1?1:0)+"%";
+const tableFor = name => TABLES[(PETLIST.find(p=>p[0]===name)||["","g4"])[1]];
+
+function snapshot(){
+  const stock={};
+  STOCK_KEYS.forEach(k=>{ const el=$(k); if(el) stock[k]=el.value; });
+  return {version:3, savedAt:new Date().toISOString(), stock, roster};
+}
+function applyState(s){
+  if(!s||typeof s!=="object") throw new Error("Not a saved loadout.");
+  if(Array.isArray(s.roster)){
+    roster=s.roster.filter(p=>p&&typeof p.pet==="string").map(p=>({
+      pet: PETLIST.some(x=>x[0]===p.pet)?p.pet:"Future SR / mythic pet",
+      lvl: Math.max(1,Math.min(100,+p.lvl||1)),
+      adv: !!p.adv, on: p.on!==false }));
+  }
+  if(s.stock) STOCK_KEYS.forEach(k=>{ const el=$(k); if(el&&s.stock[k]!==undefined) el.value=s.stock[k]; });
+}
+function persist(){
+  let msg="Saved in this browser";
+  try{ localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot())); }
+  catch(e){ msg="Browser storage unavailable — use Export"; }
+  const el=$("save-status"); if(el) el.textContent=msg;
+}
+function restore(){ try{ const s=localStorage.getItem(SAVE_KEY); if(s) applyState(JSON.parse(s)); }catch(e){} }
+
+function cumFood(tbl,lvl){
+  let pc=0,pl=0;
+  for(const r of tbl.rows){
+    if(lvl>=r[0]){ pc=r[1]; pl=r[0]; }
+    else return pc + (lvl-pl)/(r[0]-pl)*(r[1]-pc);
+  }
+  return pc;
+}
+function owedStages(petName,lvl,adv){
+  const tbl=tableFor(petName), out=[];
+  let fs=cumFood(tbl,lvl);
+  for(const [L,cf,gm,np,pm,kvk] of tbl.rows){
+    // Sitting un-ascended on a milestone: that Advance is owed but the food is already paid.
+    if(L<lvl) continue;
+    if(L===lvl && adv) continue;
+    const base = (lvl > L-10) ? fs : cumFood(tbl,L-10);
+    out.push({to:L, food:Math.round(cf-base), gm, np, pm, kvk});
+    fs=cf;
+  }
+  return out;
+}
+const have=()=>({food:+$("i-food").value||0, gm:+$("i-gm").value||0, np:+$("i-np").value||0, pm:+$("i-pm").value||0});
+const chestBudget=()=>+$("i-chest").value||0;
+const chestsFor=(gm,np,pm,h)=>Math.ceil(Math.max(0,gm-h.gm)/7)+Math.ceil(Math.max(0,np-h.np)/2)+Math.max(0,pm-h.pm);
+const splitFor=(gm,np,pm,h)=>({cg:Math.ceil(Math.max(0,gm-h.gm)/7), cn:Math.ceil(Math.max(0,np-h.np)/2), cp:Math.max(0,pm-h.pm)});
+
+function solve(){
+  const h=have(), budget=chestBudget();
+  const lists=roster.map(p=>owedStages(p.pet,p.lvl,p.adv));
+  const n=lists.length, pick=new Array(n).fill(0);
+  let best={A:null,Z:null,B:null};
+  const better=(a,b)=>{ if(!b) return true; for(let i=0;i<a.length;i++){ if(a[i]!==b[i]) return a[i]>b[i]; } return false; };
+  function consider(st){
+    const s=splitFor(st.gm,st.np,st.pm,h);
+    st.split=s;
+    st.waste=(h.gm+7*s.cg-st.gm)+(h.np+2*s.cn-st.np)+(h.pm+s.cp-st.pm);
+    st.ppf=st.nadv?st.kvk/Math.max(st.food,1):0;
+    st.npets=st.pick.filter(k=>k>0).length;
+    // Chests are a stockpile with no competing use, so never break a tie by hoarding them
+    // ahead of saving Pet Food, which is the resource that cannot be minted.
+    const A=[st.nadv,-st.food,st.kvk,-st.chests];
+    const Z=[st.nadv,st.kvk,-st.food];
+    const B=[st.kvk,-st.food,-st.chests];
+    if(better(A,best.A&&best.A._A)) best.A={...st,_A:A};
+    if(st.chests===0&&st.nadv&&better(Z,best.Z&&best.Z._Z)) best.Z={...st,_Z:Z};
+    if(better(B,best.B&&best.B._B)) best.B={...st,_B:B};
+  }
+  function rec(i,food,gm,np,pm,kvk,nadv){
+    if(i===n){ consider({pick:pick.slice(),food,gm,np,pm,kvk,nadv,chests:chestsFor(gm,np,pm,h)}); return; }
+    let f=food,g=gm,p2=np,p3=pm,k2=kvk,c=nadv;
+    for(let k=0;k<=lists[i].length;k++){
+      if(k>0){ const st=lists[i][k-1]; f+=st.food; g+=st.gm; p2+=st.np; p3+=st.pm; k2+=st.kvk; c++; }
+      if(f>h.food) break;
+      if(chestsFor(g,p2,p3,h)>budget) break;
+      pick[i]=k; rec(i+1,f,g,p2,p3,k2,c);
+    }
+    pick[i]=0;
+  }
+  rec(0,0,0,0,0,0,0);
+  return {best,lists,h,budget};
+}
+
+const OBJ_META=[
+  ["A","Most Advances","The most skill and stat milestones unlocked, settling ties toward whichever plan burns less Pet Food."],
+  ["Z","Without opening a chest","What the materials already on hand can do, keeping every chest banked for later."],
+  ["B","Most KvK points","The biggest event score available — worth taking when a KvK push is actually live."]
+];
+
+function render(){
+  const tb=$("roster"); tb.innerHTML="";
+  if(!roster.length){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td colspan="6" style="color:var(--text-3);padding:14px 10px">
+      No pets yet — press <b style="color:var(--text-2)">Add pet</b> below, then set each one's level.</td>`;
+    tb.appendChild(tr);
+  }
+  roster.forEach((p,i)=>{
+    const tbl=tableFor(p.pet), owed=owedStages(p.pet,p.lvl,p.adv), onMs=p.lvl%10===0;
+    const opts=PETLIST.map(([nm])=>`<option${nm===p.pet?" selected":""}>${nm}</option>`).join("");
+    const onCell = `<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-i="${i}" data-f="on"${p.on===false?"":" checked"}></label>`;
+    const advCell = onMs
+      ? `<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer">
+           <input type="checkbox" data-i="${i}" data-f="adv"${p.adv?" checked":""}> ascended at ${p.lvl}</label>`
+      : `<span style="font-size:13px;color:var(--text-3)">— between Advances</span>`;
+    const tr=document.createElement("tr");
+    tr.style.opacity = p.on===false ? ".45" : "1";
+    tr.innerHTML=`<td>${onCell}</td>
+      <td><select data-i="${i}" data-f="pet">${opts}</select></td>
+      <td class="r"><input type="number" data-i="${i}" data-f="lvl" min="1" max="${tbl.max}" value="${p.lvl}"></td>
+      <td class="r num" style="color:var(--text-3)">${tbl.max}</td>
+      <td>${advCell}</td>
+      <td class="num" style="font-size:13px;color:${owed.length?"var(--text-2)":"var(--text-3)"}">${owed.length?owed.map(s=>s.to).join(" · "):"— fully advanced"}</td>
+      <td class="r"><button class="ghost" data-del="${i}" aria-label="Remove ${p.pet}">×</button></td>`;
+    tb.appendChild(tr);
+  });
+
+  const {best,lists,h,budget}=solve();
+  const active=roster.filter(p=>p.on!==false);
+  const anyStock=h.food||h.gm||h.np||h.pm||budget;
+  const ready=active.length&&anyStock;
+
+  if(!ready){
+    $("v-title").textContent="Start by entering what you have.";
+    $("v-body").innerHTML=!active.length&&!anyStock
+      ? `Fill in the materials above, then add the pets worth planning for. Courses of action appear as soon as there is something to work with.`
+      : !active.length
+        ? `Materials are in — now add the pets worth planning for, and set each one's level.`
+        : `Pets are listed — now fill in the materials above.`;
+    $("free-box").hidden=true;
+    $("objs").innerHTML=`<div class="obj" style="grid-column:1/-1"><div class="obj-body">
+      <p class="note">Nothing to solve yet. Once a stock and at least one pet are entered, three courses of action appear here.</p></div></div>`;
+    $("obj-note").textContent="";
+    renderEff(); renderDim(); renderFuture(h,budget); persist();
+    return;
+  }
+
+  const lead="A";
+  const cont=$("objs"); cont.innerHTML="";
+  OBJ_META.forEach(([key,title,sub])=>{
+    const r=best[key], el=document.createElement("div");
+    el.className="obj"+(key===lead?" lead":"");
+    if(!r){
+      el.innerHTML=`<div class="obj-top"><h3>${title}</h3><p class="sub">${sub}</p></div>
+        <div class="obj-body"><p class="note">No Advance is affordable with this stock.</p></div>`;
+      cont.appendChild(el); return;
+    }
+    const steps=[]; r.pick.forEach((k,i)=>{ if(k) steps.push({name:roster[i].pet, from:roster[i].lvl, to:lists[i][k-1].to}); });
+    const s=r.split, maxc=Math.max(1,s.cg,s.cn,s.cp);
+    const rows=[["Growth Manual","var(--manual)",s.cg,s.cg*7],["Nutrient Potion","var(--potion)",s.cn,s.cn*2],["Promotion Medallion","var(--medal)",s.cp,s.cp]];
+    el.innerHTML=`
+      <div class="obj-top">
+        <div class="tag">${key===lead?'<span class="pill">Reaches furthest</span>':""}<h3>${title}</h3></div>
+        <p class="sub">${sub}</p>
+      </div>
+      <div class="obj-body">
+        <div class="headline">
+          <span class="big num">${r.nadv} <span style="font-size:15px;font-weight:600;font-family:'Source Sans 3',sans-serif">Advance${r.nadv===1?"":"s"}</span></span>
+          <span class="unit">across ${r.npets} pet${r.npets===1?"":"s"} ·
+          <span style="color:${r.food===0?"var(--good)":"var(--food)"}">${r.food===0?"no Pet Food at all":fmt(r.food)+" Pet Food"}</span><br>
+          <span style="color:var(--text-3)">${fmt(r.kvk)} KvK points</span></span>
+        </div>
+        <ul class="plan-list">${steps.length?steps.map(x=>`<li><span>${x.name}</span><b class="num">${x.from} → ${x.to}</b></li>`).join(""):"<li>Nothing affordable</li>"}</ul>
+        <div class="split">
+          <div class="eyebrow">Open ${fmt(r.chests)} of ${fmt(budget)} chests · keep ${fmt(budget-r.chests)}</div>
+          ${rows.map(([nm,col,q,y])=>`<div class="split-row">
+            <span class="nm">${nm}</span>
+            <div class="bar"><span style="width:${100*q/maxc}%;background:${col}"></span></div>
+            <span class="qty" style="color:${col}">${q}</span></div>`).join("")}
+          <div class="split-row" style="color:var(--text-3);font-size:12.5px"><span class="nm">chests yield</span>
+            <span class="num">${s.cg*7} man · ${s.cn*2} pot · ${s.cp} med</span></div>
+          <div class="split-row" style="color:var(--text-3);font-size:12.5px;padding-top:6px;border-top:1px dashed var(--line-soft)">
+            <span class="nm">plan consumes</span>
+            <span class="num">${fmt(r.gm)} man · ${fmt(r.np)} pot · ${fmt(r.pm)} med</span></div>
+        </div>
+        <div class="leftover">Leaves <b class="num">${fmt(h.food-r.food)}</b> Pet Food and <b class="num">${fmt(budget-r.chests)}</b> chests in the bank; <b class="num">${fmt(r.waste)}</b> materials stranded.</div>
+      </div>`;
+    cont.appendChild(el);
+  });
+
+  const freebies=[];
+  roster.forEach(p=>{
+    if(p.lvl%10!==0||p.adv) return;
+    const st=owedStages(p.pet,p.lvl,p.adv)[0];
+    if(st&&st.food===0) freebies.push({name:p.pet,st,chests:chestsFor(st.gm,st.np,st.pm,h)});
+  });
+  const fb=$("free-box");
+  if(freebies.length){
+    fb.hidden=false;
+    fb.innerHTML=`<div class="eyebrow" style="color:var(--good)">If Pet Food is the constraint, start here</div>
+      <p style="margin:0">These pets are already fed to a milestone but not ascended, so the Advance needs <strong>no Pet Food at all</strong> — only materials. Whenever food is what runs out first, these are the cheapest milestones on the board.</p>
+      <ul class="plan-list" style="margin-top:4px">${freebies.map(f=>
+        `<li><span>${f.name} — Advance at ${f.st.to}</span><b class="num">${fmt(f.st.kvk)} KvK · ${f.chests} chests</b></li>`).join("")}</ul>`;
+  } else { fb.hidden=true; fb.innerHTML=""; }
+
+  const A=best.A, B=best.B;
+  if(A){
+    // What actually stops the next Advance? Test the cheapest one not already taken.
+    const nxt=[];
+    A.pick.forEach((k,i)=>{
+      if(k>=lists[i].length) return;
+      const st=lists[i][k];
+      const gm=A.gm+st.gm, np=A.np+st.np, pm=A.pm+st.pm;
+      nxt.push({pet:active[i], to:st.to, food:A.food+st.food,
+                chests:chestsFor(gm,np,pm,h)});
+    });
+    nxt.sort((a,b)=>(a.food-b.food)||(a.chests-b.chests));
+    const n=nxt[0];
+    if(!n){
+      $("v-title").textContent="Every planned Advance is already affordable.";
+      $("v-body").innerHTML=`Every Advance on the list is within reach of the options below.`;
+    } else {
+      const needFood=Math.max(0,n.food-h.food), needChest=Math.max(0,n.chests-budget);
+      const what = needFood&&needChest ? "Pet Food and Pet Chests" : needFood ? "Pet Food" : needChest ? "Pet Chests" : "nothing";
+      $("v-title").textContent = needFood||needChest
+        ? `What is holding you back right now: ${what}.`
+        : `You have room for more than the plan below.`;
+      $("v-body").innerHTML = `The furthest any option below reaches is <strong>${A.nadv} Advance${A.nadv===1?"":"s"}</strong> across <strong>${A.npets}</strong> pet${A.npets===1?"":"s"}, opening <strong>${fmt(A.chests)}</strong> of <strong>${fmt(budget)}</strong> chests and spending <strong>${fmt(A.food)}</strong> Pet Food. `
+        + `The cheapest Advance nothing here can reach is <strong>${n.pet?n.pet.pet:"the next pet"} to ${n.to}</strong>`
+        + (needFood?`, short by <strong>${fmt(needFood)}</strong> Pet Food`:"")
+        + (needChest?`${needFood?" and":", short by"} <strong>${fmt(needChest)}</strong> chests`:"")
+        + `. That is the number to go and farm.`;
+    }
+  }
+  $("obj-note").innerHTML = (A&&B&&B.kvk!==A.kvk)
+    ? `Where the cards disagree is the useful part. <b>Most Advances</b> unlocks ${A.nadv} milestone${A.nadv===1?"":"s"} for ${fmt(A.food)} Pet Food; <b>Most KvK points</b> reaches ${fmt(B.kvk)} for ${fmt(B.food)}. Milestones change how a pet plays every day; points are a by-product of the same Advances, so that card earns its keep mainly while an event is live.`
+    : `All three cards land on the same plan with this stock.`;
+
+  renderEff(); renderDim(); renderFuture(h,budget);
+  persist();
+}
+
+function genKey(){ return $("gen-pick").value||"g4"; }
+
+function renderEff(){
+  const tbl=TABLES[genKey()], rows=tbl.rows, tb=$("eff"); tb.innerHTML="";
+  const costs=rows.map((r,i)=>r[1]-(i?rows[i-1][1]:0));
+  const mx=Math.max(...costs);
+  rows.forEach((r,i)=>{
+    const f=costs[i], ce=Math.ceil(r[2]/7)+Math.ceil(r[3]/2)+r[4];
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td class="num" style="font-weight:700">${r[0]}</td>
+      <td class="r num" style="color:var(--food)">${fmt(f)}</td>
+      <td class="r num" style="color:var(--manual)">${r[2]}</td>
+      <td class="r num" style="color:var(--potion)">${r[3]||"—"}</td>
+      <td class="r num" style="color:var(--medal)">${r[4]||"—"}</td>
+      <td class="r num">${fmt(r[5])}</td>
+      <td><div class="bar"><span style="width:${100*f/mx}%;background:var(--food)"></span></div></td>
+      <td class="r num" style="color:var(--text-3)">${fmt(r[1])}</td>
+      <td class="r num" style="color:var(--chest)">${ce}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function renderDim(){
+  const tbl=TABLES[genKey()], rows=tbl.rows, tb=$("dim"); tb.innerHTML="";
+  const N=rows.length, totalFood=rows[N-1][1];
+  let gm=0,np=0,pm=0;
+  const cum=rows.map(r=>{ gm+=r[2]; np+=r[3]; pm+=r[4]; return {gm,np,pm}; });
+  const T=cum[N-1];
+  // Total invested = the four material shares averaged, so no one resource dominates.
+  const share=rows.map((r,i)=>{
+    const parts=[r[1]/totalFood, cum[i].gm/T.gm];
+    if(T.np) parts.push(cum[i].np/T.np);
+    if(T.pm) parts.push(cum[i].pm/T.pm);
+    return parts.reduce((a,b)=>a+b,0)/parts.length;
+  });
+  rows.forEach((r,i)=>{
+    const mile=(i+1)/N, inv=share[i];
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td class="num" style="font-weight:700">${r[0]}</td>
+      <td class="r num">${i+1} of ${N}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:7px">
+          <div class="bar" style="height:9px"><span style="width:${100*mile}%;background:var(--accent)"></span></div>
+          <span class="num" style="font-size:12px;width:36px;text-align:right;color:var(--accent)">${pct(mile)}</span></div>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:3px">
+          <div class="bar" style="height:9px"><span style="width:${100*inv}%;background:var(--chest)"></span></div>
+          <span class="num" style="font-size:12px;width:36px;text-align:right;color:var(--chest)">${pct(inv)}</span></div>
+      </td>
+      <td class="r num" style="color:var(--food)">${pct(r[1]/totalFood)}</td>
+      <td class="r num" style="color:var(--manual)">${pct(cum[i].gm/T.gm)}</td>
+      <td class="r num" style="color:var(--potion)">${T.np?pct(cum[i].np/T.np):"—"}</td>
+      <td class="r num" style="color:var(--medal)">${T.pm?pct(cum[i].pm/T.pm):"—"}</td>`;
+    tb.appendChild(tr);
+  });
+  const idx=Math.min(Math.floor(N*0.6),N-1), mid=rows[idx];
+  const lastStep=share[N-1]-share[N-2];
+  $("dim-note").innerHTML=`Advance milestones arrive on a flat schedule — one per ten levels — while their price climbs steeply. For ${tbl.label.toLowerCase()}, standing at <b>level ${mid[0]}</b> means <b>${pct((idx+1)/N)}</b> of the milestones are unlocked for <b>${pct(share[idx])}</b> of everything that pet will ever consume. The tail carries the difference: the final Advance, from ${rows[N-2][0]} to ${rows[N-1][0]}, costs <b>${pct(lastStep)}</b> of the entire lifetime investment to unlock one more milestone.`;
+}
+
+function renderFuture(h,budget){
+  const tbl=TABLES[genKey()], rows=tbl.rows, tb=$("future"); tb.innerHTML="";
+  let gm=0,np=0,pm=0,reach=0;
+  rows.forEach(r=>{
+    gm+=r[2]; np+=r[3]; pm+=r[4];
+    const need=chestsFor(gm,np,pm,h);
+    const bank={cg:Math.ceil(gm/7),cn:Math.ceil(np/2),cp:pm}, tot=bank.cg+bank.cn+bank.cp;
+    const okChest=need<=budget, okFood=r[1]<=h.food;
+    if(okChest&&okFood) reach=r[0];
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td class="num" style="font-weight:700">Level ${r[0]}</td>
+      <td class="r num" style="color:${okFood?"var(--food)":"var(--text-3)"}">${fmt(r[1])}</td>
+      <td class="r num" style="color:var(--manual)">${fmt(gm)}</td>
+      <td class="r num" style="color:var(--potion)">${np?fmt(np):"—"}</td>
+      <td class="r num" style="color:var(--medal)">${pm?fmt(pm):"—"}</td>
+      <td class="r num">${fmt(need)}</td>
+      <td class="num" style="font-size:12.5px;color:var(--text-2)">${Math.round(100*bank.cg/tot)}% manual · ${Math.round(100*bank.cn/tot)}% potion · ${Math.round(100*bank.cp/tot)}% medallion</td>
+      <td class="r ${okChest&&okFood?"ok":"blocked"}" style="font-weight:600">${okChest&&okFood?"yes":(okChest?"food short":"no")}</td>`;
+    tb.appendChild(tr);
+  });
+  const rr=rows.find(r=>r[0]===reach);
+  $("future-note").innerHTML = reach
+    ? `Starting a fresh ${tbl.label.replace(/^Generation[s]? /,"Gen ")} pet from level 1, the current stock of ${fmt(budget)} chests and materials carries it to <b>level ${reach}</b> — needing ${fmt(rr[1])} Pet Food along the way. Medallions are what stall a new pet: they first appear at the Advance to 50 and then dominate every gate after it.`
+    : `The current stock cannot complete even the first Advance for a fresh pet of this generation.`;
+}
+
+document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.id==="import-text") return;
+  if(t.id==="gen-pick"){ renderEff(); renderDim(); renderFuture(have(),chestBudget()); return; }
+  if(t.dataset&&t.dataset.f!==undefined){
+    const i=+t.dataset.i, f=t.dataset.f;
+    if(f==="lvl"){ roster[i].lvl=Math.max(1,Math.min(tableFor(roster[i].pet).max,+t.value||1)); }
+    else if(f==="adv"){ roster[i].adv=t.checked; }
+    else if(f==="on"){ roster[i].on=t.checked; }
+    else { roster[i].pet=t.value; roster[i].lvl=Math.min(roster[i].lvl,tableFor(t.value).max); }
+  }
+  render();
+});
+document.addEventListener("click",e=>{
+  const d=e.target.dataset&&e.target.dataset.del;
+  if(d!==undefined&&d!==null&&d!==""){ roster.splice(+d,1); render(); }
+});
+$("add").addEventListener("click",()=>{ roster.push({pet:"Future SR / mythic pet",lvl:1,adv:false,on:true}); render(); });
+$("show-import").addEventListener("click",()=>{
+  const b=$("import-box"); b.hidden=!b.hidden;
+  if(!b.hidden){ $("d-save").open=true; $("import-text").focus(); }
+});
+$("do-import").addEventListener("click",()=>{
+  const m=$("import-msg");
+  try{ applyState(JSON.parse($("import-text").value)); render(); m.style.color="var(--good)"; m.textContent="Loaded."; }
+  catch(err){ m.style.color="var(--bad)"; m.textContent="That isn't a valid loadout — paste the whole contents of an exported file."; }
+});
+// Two-step, because clearing an entered roster by a stray click is a bad time.
+// No location.reload() here: browsers restore typed form values across a soft
+// reload, which silently left the materials on screen after a clear.
+let clearArmed=0;
+$("reset").addEventListener("click",()=>{
+  const btn=$("reset");
+  if(Date.now()>clearArmed){
+    clearArmed=Date.now()+4000;
+    btn.textContent="Click again to confirm";
+    btn.style.borderColor="var(--bad)"; btn.style.color="var(--bad)";
+    setTimeout(()=>{
+      if(Date.now()>clearArmed) return;
+      clearArmed=0; btn.textContent="Clear everything";
+      btn.style.borderColor=""; btn.style.color="";
+    },4000);
+    return;
+  }
+  clearArmed=0;
+  btn.textContent="Clear everything"; btn.style.borderColor=""; btn.style.color="";
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+  STOCK_KEYS.forEach(k=>{ const el=$(k); if(el) el.value=0; });
+  roster=[];
+  $("import-box").hidden=true; $("import-text").value=""; $("import-msg").textContent="";
+  render();
+});
+
+(async ()=>{
+  let dl=null;
+  try{ dl = (window.claude&&claude.use) ? await claude.use("downloads") : null; }catch(e){}
+  const btn=$("export");
+  if(!dl){
+    btn.textContent="Copy JSON to clipboard";
+    btn.addEventListener("click",async ()=>{
+      const txt=JSON.stringify(snapshot(),null,2);
+      try{ await navigator.clipboard.writeText(txt); btn.textContent="Copied"; }
+      catch(e){ $("d-save").open=true; $("import-box").hidden=false; $("import-text").value=txt; btn.textContent="Shown below — copy it"; }
+      setTimeout(()=>{btn.textContent="Copy JSON to clipboard";},2200);
+    });
+    return;
+  }
+  btn.addEventListener("click",async ()=>{
+    try{
+      await dl.save({filename:`kingshot-pets-${new Date().toISOString().slice(0,10)}.json`, data:JSON.stringify(snapshot(),null,2)});
+      btn.textContent="Saved"; setTimeout(()=>{btn.textContent="Export JSON";},2200);
+    }catch(err){
+      if(err&&err.code==="declined") return;
+      btn.textContent="Couldn't save — try Copy"; setTimeout(()=>{btn.textContent="Export JSON";},2600);
+    }
+  });
+})();
+
+$("gen-pick").innerHTML=Object.entries(TABLES).map(([k,v])=>`<option value="${k}"${k==="g4"?" selected":""}>${v.label}</option>`).join("");
+restore();
+render();
+</script>
