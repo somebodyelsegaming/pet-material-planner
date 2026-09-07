@@ -1,10 +1,13 @@
 ---
 task: "Kingshot Pet Material Planner — material-to-Advance planning tool"
 project: pet-material-planner
-phase: complete
+phase: learn
 progress: 17/17
 started: 2026-09-06T00:00:00Z
 updated: 2026-09-06T00:00:00Z
+iteration: 2
+resumed_at: 2026-09-07T06:48:46.356Z
+resumed_from_phase: complete
 ---
 
 <!-- Seeded from the repository's own build session and cross-checked against
@@ -265,6 +268,7 @@ a silent transcription error would mis-price every Advance downstream.
   risks a visitor mistaking a shipped example — or another visitor's
   figures — for their own account. The worked example instead lives at
   `examples/sample-loadout.json`, loaded on request via Paste-a-loadout.
+- D-auto-2026-09-07T06:48:46.356Z: Auto-resumed from complete to learn at 2026-09-07T06:48:46.356Z — iteration 2
 
 ## Learning
 
@@ -309,11 +313,9 @@ a silent transcription error would mis-price every Advance downstream.
 
 ## Remaining Work
 
-- [ ] `README.md`'s file tree still lists `SESSION-NOTES.md`, which
+- [x] `README.md`'s file tree listed `SESSION-NOTES.md`, which
   `.gitignore`'s `SESSION-*` pattern deliberately excludes from a fresh
-  clone — the README should point at this ISA instead, or drop the line.
-  Not an ISC here because it's a one-line doc fix with no behavior to
-  verify, not a claim about the tool.
+  clone. Fixed — the Layout section now points at `ISA.md` instead.
 - [ ] No `LICENSE` file yet. Wanted before the repository goes public; not
   needed while it stays private, so not worth an ISC until that decision is
   made.
