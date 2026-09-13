@@ -267,8 +267,28 @@ a silent transcription error would mis-price every Advance downstream.
   rather than pre-filled with a working example, so a hosted copy never
   risks a visitor mistaking a shipped example — or another visitor's
   figures — for their own account. The worked example instead lives at
-  `examples/sample-loadout.json`, loaded on request via Paste-a-loadout.
+  `examples/sample-loadout.json`, loaded on request via Import JSON.
 - D-auto-2026-09-07T06:48:46.356Z: Auto-resumed from complete to learn at 2026-09-07T06:48:46.356Z — iteration 2
+- 2026-09-13: Cut the Save & restore panel to three controls — Export JSON,
+  Import JSON, Clear everything. Import is the file picker itself and applies
+  the chosen file immediately, because the pick is already the confirmation;
+  the separate Load button and the paste textarea were removed with it. The
+  toggle that revealed them had never worked: the page defines no `[hidden]`
+  rule, so the UA stylesheet's `display:none` lost to the box's inline
+  `display:flex` and the panel rendered permanently while the button appeared
+  inert. `[hidden]{display:none !important}` is now declared so the attribute
+  is authoritative anywhere it is used.
+- 2026-09-13: Imported loadouts are validated rather than trusted. Material
+  counts are coerced to non-negative whole numbers (anything else becomes 0,
+  which stops NaN propagating into every total and then into `localStorage`),
+  and both a picked file and its parse are capped at 768 KB against a real
+  loadout of roughly 1.7 KB with every pet on the roster. The `accept` filter
+  on the file input is a picker convenience, not a control. Roster entries
+  were already safe: pet names are matched against `PETLIST` and levels
+  clamped before anything reaches the DOM.
+- 2026-09-13: Export writes a Blob through a synthetic `<a download>` rather
+  than requesting a host download capability, so the button behaves the same
+  from `file://`, GitHub Pages, or any static host.
 
 ## Learning
 
