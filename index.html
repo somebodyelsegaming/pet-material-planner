@@ -330,6 +330,18 @@ function snapshot(){
   STOCK_KEYS.forEach(k=>{ const el=$(k); if(el) stock[k]=el.value; });
   return {version:3, savedAt:new Date().toISOString(), stock, roster};
 }
+// Imported counts are whatever a file said they were. Anything not a
+// non-negative whole number becomes 0 rather than propagating NaN through
+// every total on the page.
+const MAX_COUNT=1e12;
+function cleanCount(v){
+  const n=Math.floor(Number(v));
+  return Number.isFinite(n)&&n>=0 ? String(Math.min(n,MAX_COUNT)) : "0";
+}
+// A loadout is a few hundred bytes. Anything approaching this is not one,
+// and parsing it would only lock up the tab.
+const MAX_IMPORT_BYTES=512*1024;
+
 function applyState(s){
   if(!s||typeof s!=="object") throw new Error("Not a saved loadout.");
   if(Array.isArray(s.roster)){
@@ -338,7 +350,7 @@ function applyState(s){
       lvl: Math.max(1,Math.min(100,+p.lvl||1)),
       adv: !!p.adv, on: p.on!==false }));
   }
-  if(s.stock) STOCK_KEYS.forEach(k=>{ const el=$(k); if(el&&s.stock[k]!==undefined) el.value=s.stock[k]; });
+  if(s.stock) STOCK_KEYS.forEach(k=>{ const el=$(k); if(el&&s.stock[k]!==undefined) el.value=cleanCount(s.stock[k]); });
 }
 function persist(){
   let msg="Saved in this browser";
@@ -674,12 +686,16 @@ $("file-input").addEventListener("change",async ()=>{
   const m=$("import-msg");
   if(f){
     try{
+      if(f.size>MAX_IMPORT_BYTES) throw new Error("too big");
       const txt=await f.text();
       $("import-text").value=txt;
       applyState(JSON.parse(txt)); render();
       m.style.color="var(--good)"; m.textContent=`Loaded ${f.name}.`;
     }catch(err){
-      m.style.color="var(--bad)"; m.textContent="That file isn't a valid loadout.";
+      m.style.color="var(--bad)";
+      m.textContent = err&&err.message==="too big"
+        ? "That file is far too large to be a loadout."
+        : "That file isn't a valid loadout.";
     }
   }
   // Cleared so picking the same file again still fires a change event.
@@ -687,7 +703,11 @@ $("file-input").addEventListener("change",async ()=>{
 });
 $("do-import").addEventListener("click",()=>{
   const m=$("import-msg");
-  try{ applyState(JSON.parse($("import-text").value)); render(); m.style.color="var(--good)"; m.textContent="Loaded."; }
+  const txt=$("import-text").value;
+  if(txt.length>MAX_IMPORT_BYTES){
+    m.style.color="var(--bad)"; m.textContent="That is far too large to be a loadout."; return;
+  }
+  try{ applyState(JSON.parse(txt)); render(); m.style.color="var(--good)"; m.textContent="Loaded."; }
   catch(err){ m.style.color="var(--bad)"; m.textContent="That isn't a valid loadout — paste the whole contents of an exported file."; }
 });
 // Two-step, because clearing an entered roster by a stray click is a bad time.
