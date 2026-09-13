@@ -316,9 +316,11 @@ a silent transcription error would mis-price every Advance downstream.
 - [x] `README.md`'s file tree listed `SESSION-NOTES.md`, which
   `.gitignore`'s `SESSION-*` pattern deliberately excludes from a fresh
   clone. Fixed — the Layout section now points at `ISA.md` instead.
-- [ ] No `LICENSE` file yet. Wanted before the repository goes public; not
-  needed while it stays private, so not worth an ISC until that decision is
-  made.
+- [x] No `LICENSE` file yet. Fixed — MIT, held by `somebodyelsegaming`, with
+  the `data/pet-advance-costs.json` cost tables explicitly carved out as
+  derived from the Kingshot Optimizer database and not the holder's to
+  relicense. MIT was chosen so the upstream data source can absorb this tool
+  into their own site, commercial or closed, without legal review.
 - [ ] No deploy workflow. Optional — the tool is a single static HTML file,
   so pointing GitHub Pages at the repository root is sufficient; a workflow
   only earns its place if a build step is ever introduced.
