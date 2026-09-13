@@ -29,9 +29,11 @@ Chests also cannot mint Pet Food, which is usually what really limits a plan.
 
 ## Running it
 
-`pet-material-planner.html` is self-contained — no build step, no backend, no
-dependencies beyond a Google Fonts stylesheet. Open it from disk, or drop it
-on any static host (GitHub Pages, Netlify, S3, a plain nginx directory).
+Live at **https://somebodyelsegaming.github.io/pet-material-planner/**
+
+`index.html` is self-contained — no build step, no backend, no dependencies
+beyond a Google Fonts stylesheet. Open it from disk, or drop it on any static
+host (GitHub Pages, Netlify, S3, a plain nginx directory).
 
 Saved state lives in the visitor's own `localStorage`, so a hosted copy gives
 every player their own private loadout with no server involved. There is also
@@ -40,7 +42,7 @@ JSON export/import for backups and moving between devices.
 ## Layout
 
 ```
-pet-material-planner.html      the tool — this is the whole app
+index.html                     the tool — this is the whole app
 data/pet-advance-costs.json    Advance cost tables, all 7 generations
 tools/solve.py                 the same model as a CLI, for checking results
 examples/sample-loadout.json   a filled-in account, to see the tool working

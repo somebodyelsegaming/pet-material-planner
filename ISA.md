@@ -11,7 +11,7 @@ resumed_from_phase: complete
 ---
 
 <!-- Seeded from the repository's own build session and cross-checked against
-pet-material-planner.html, tools/solve.py, README.md, and data/pet-advance-costs.json.
+index.html, tools/solve.py, README.md, and data/pet-advance-costs.json.
 Figures used as illustration below are drawn from examples/sample-loadout.json,
 which is itself already a labeled example in the repo, not a real account. -->
 
@@ -76,7 +76,7 @@ no risk of accidentally re-charging food for a milestone already fed.
 
 ## Constraints
 
-- **Single self-contained HTML file.** `pet-material-planner.html` has no
+- **Single self-contained HTML file.** `index.html` has no
   build step and no dependency beyond a Google Fonts stylesheet, so it can
   be opened from disk or dropped on any static host (GitHub Pages, Netlify,
   S3, a plain nginx directory) with zero backend.
@@ -158,7 +158,7 @@ the part both the web tool and the CLI must agree on.
       all reported alongside the Advance count and KvK score — so a plan
       that leaves chests unopened reads as an expected outcome, not a gap.
 
-### F2 · Web tool (`pet-material-planner.html`)
+### F2 · Web tool (`index.html`)
 
 Why: the primary, zero-install surface a player actually uses.
 
@@ -212,20 +212,20 @@ a silent transcription error would mis-price every Advance downstream.
 | isc | type | check | threshold | tool | anchors_to |
 |-----|------|-------|-----------|------|------------|
 | C1 | manual | search enumerates depth-first with monotonic pruning, not sorted value-density | search never greedily sorts materials | code read | `tools/solve.py` `solve()`/`walk()` |
-| C2 | manual | ascended=false at a milestone level charges zero food for that Advance | food delta is 0 for the owed Advance | code read | `tools/solve.py` `owed_advances()`/`cumulative_food()`; `pet-material-planner.html` Ascended? column |
-| C3 | manual | tie-break tuple orders least-food before fewest-chests | food ordered before chests in the comparison key | code read | `pet-material-planner.html` sort key (`[nadv, -food, kvk, -chests]`) |
+| C2 | manual | ascended=false at a milestone level charges zero food for that Advance | food delta is 0 for the owed Advance | code read | `tools/solve.py` `owed_advances()`/`cumulative_food()`; `index.html` Ascended? column |
+| C3 | manual | tie-break tuple orders least-food before fewest-chests | food ordered before chests in the comparison key | code read | `index.html` sort key (`[nadv, -food, kvk, -chests]`) |
 | C4 | manual | pruning ceilings are monotonic (food, chest budget) | branch pruned once either ceiling is exceeded | code read | `tools/solve.py` `walk()` |
-| C5 | manual | three objective definitions present with stated tie-breaks | labels + tie-break text match spec | code read | `pet-material-planner.html` objective table (`"Most Advances"`/`"Without opening a chest"`/`"Most KvK points"`) |
-| C6 | manual | excluded pet contributes nothing to any plan | excluded pet absent from all three plans | manual run | `pet-material-planner.html` "Plan it?" column / roster `on` field |
-| C7 | manual | plan output states chests opened/kept, food remaining, stranded materials | all four figures present per plan | manual run | `pet-material-planner.html` leftover/eyebrow rendering |
-| C8 | build | file opens standalone with no build step | opens directly in a browser from disk | manual run | `pet-material-planner.html` |
-| C9 | manual | state round-trips through reload and export/import | roster + stock identical after reload | manual run | `pet-material-planner.html` `save()`/`restore()`, export/import |
-| C10 | manual | first load with no saved state shows zeroed materials, empty roster | all stock fields 0, roster empty | manual run | `pet-material-planner.html` initial state |
-| C11 | manual | toggling Ascended?/Plan it? changes the computed plan | plan output changes on toggle | manual run | `pet-material-planner.html` roster table |
-| C12 | manual | card text order is Advances, chests, food, KvK | order matches spec | manual run | `pet-material-planner.html` card rendering |
+| C5 | manual | three objective definitions present with stated tie-breaks | labels + tie-break text match spec | code read | `index.html` objective table (`"Most Advances"`/`"Without opening a chest"`/`"Most KvK points"`) |
+| C6 | manual | excluded pet contributes nothing to any plan | excluded pet absent from all three plans | manual run | `index.html` "Plan it?" column / roster `on` field |
+| C7 | manual | plan output states chests opened/kept, food remaining, stranded materials | all four figures present per plan | manual run | `index.html` leftover/eyebrow rendering |
+| C8 | build | file opens standalone with no build step | opens directly in a browser from disk | manual run | `index.html` |
+| C9 | manual | state round-trips through reload and export/import | roster + stock identical after reload | manual run | `index.html` `save()`/`restore()`, export/import |
+| C10 | manual | first load with no saved state shows zeroed materials, empty roster | all stock fields 0, roster empty | manual run | `index.html` initial state |
+| C11 | manual | toggling Ascended?/Plan it? changes the computed plan | plan output changes on toggle | manual run | `index.html` roster table |
+| C12 | manual | card text order is Advances, chests, food, KvK | order matches spec | manual run | `index.html` card rendering |
 | C13 | cli | `solve.py --help` lists all stock flags and `--pet` | flags present and documented | shell | `tools/solve.py` argparse setup |
 | C14 | cli | `solve.py --list-pets` prints roster names | non-empty name list | shell | `tools/solve.py` `--list-pets` |
-| C15 | manual | CLI and web tool agree on plans for the same stock/roster | identical Advances/food/chests/KvK per objective | manual cross-check | `tools/solve.py` vs `pet-material-planner.html` |
+| C15 | manual | CLI and web tool agree on plans for the same stock/roster | identical Advances/food/chests/KvK per objective | manual cross-check | `tools/solve.py` vs `index.html` |
 | C16 | manual | all seven generations present with source + retrieval date recorded | `_source`/`_retrieved` fields present; 7 `generations` entries | code read | `data/pet-advance-costs.json` |
 | C17 | cli | loaded tables reproduce source's published Gen4-7 cumulative totals | exact match to documented totals | script (`assert` on load) | `tools/solve.py` load-time assertion |
 
@@ -305,11 +305,11 @@ a silent transcription error would mis-price every Advance downstream.
 
 ## Verification
 
-- C1–C7, C16: code read, `tools/solve.py` + `pet-material-planner.html` — current committed source.
+- C1–C7, C16: code read, `tools/solve.py` + `index.html` — current committed source.
 - C17: `tools/solve.py` load-time `assert` against documented Gen 4–7 totals — passes on load.
-- C8–C12: manual run, opened `pet-material-planner.html` from disk with no server.
+- C8–C12: manual run, opened `index.html` from disk with no server.
 - C13–C14: manual run, `python3 tools/solve.py --help` / `--list-pets`.
-- C15: manual cross-check, `tools/solve.py` against `pet-material-planner.html` for the example loadout.
+- C15: manual cross-check, `tools/solve.py` against `index.html` for the example loadout.
 
 ## Remaining Work
 
