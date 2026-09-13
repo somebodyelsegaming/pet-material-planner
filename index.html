@@ -338,9 +338,10 @@ function cleanCount(v){
   const n=Math.floor(Number(v));
   return Number.isFinite(n)&&n>=0 ? String(Math.min(n,MAX_COUNT)) : "0";
 }
-// A loadout is a few hundred bytes. Anything approaching this is not one,
-// and parsing it would only lock up the tab.
-const MAX_IMPORT_BYTES=512*1024;
+// A loadout carrying every pet in the game is under 2 KB. Anything
+// approaching this ceiling is not a loadout, and parsing it would only lock
+// up the tab. Set generously: the cap is a stop on absurd input, not a quota.
+const MAX_IMPORT_BYTES=768*1024;
 
 function applyState(s){
   if(!s||typeof s!=="object") throw new Error("Not a saved loadout.");
