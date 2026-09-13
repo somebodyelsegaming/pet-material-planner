@@ -695,27 +695,22 @@ $("reset").addEventListener("click",()=>{
   render();
 });
 
-(async ()=>{
-  let dl=null;
-  try{ dl = (window.claude&&claude.use) ? await claude.use("downloads") : null; }catch(e){}
+(()=>{
   const btn=$("export");
-  if(!dl){
-    btn.textContent="Copy JSON to clipboard";
-    btn.addEventListener("click",async ()=>{
-      const txt=JSON.stringify(snapshot(),null,2);
-      try{ await navigator.clipboard.writeText(txt); btn.textContent="Copied"; }
-      catch(e){ $("d-save").open=true; $("import-box").hidden=false; $("import-text").value=txt; btn.textContent="Shown below — copy it"; }
-      setTimeout(()=>{btn.textContent="Copy JSON to clipboard";},2200);
-    });
-    return;
-  }
-  btn.addEventListener("click",async ()=>{
+  btn.addEventListener("click",()=>{
+    const txt=JSON.stringify(snapshot(),null,2);
+    const name=`kingshot-pets-${new Date().toISOString().slice(0,10)}.json`;
     try{
-      await dl.save({filename:`kingshot-pets-${new Date().toISOString().slice(0,10)}.json`, data:JSON.stringify(snapshot(),null,2)});
+      const url=URL.createObjectURL(new Blob([txt],{type:"application/json"}));
+      const a=document.createElement("a");
+      a.href=url; a.download=name; a.style.display="none";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
       btn.textContent="Saved"; setTimeout(()=>{btn.textContent="Export JSON";},2200);
-    }catch(err){
-      if(err&&err.code==="declined") return;
-      btn.textContent="Couldn't save — try Copy"; setTimeout(()=>{btn.textContent="Export JSON";},2600);
+    }catch(e){
+      // Some sandboxed viewers block page-initiated downloads: show the JSON to copy.
+      $("d-save").open=true; $("import-box").hidden=false; $("import-text").value=txt;
+      btn.textContent="Shown below \u2014 copy it"; setTimeout(()=>{btn.textContent="Export JSON";},2600);
     }
   });
 })();
