@@ -189,13 +189,15 @@ button.ghost:hover{color:var(--bad);border-color:var(--line)}
     <p class="note">Saves automatically in this browser. Export a JSON file for a backup or to move devices. <b>Clear everything</b> wipes the saved stock and pets and starts over.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button id="export">Export JSON</button>
-      <button id="show-import">Paste a saved loadout</button>
+      <button id="show-import">Import saved JSON</button>
       <button id="reset">Clear everything</button>
     </div>
     <div id="import-box" hidden style="display:flex;flex-direction:column;gap:9px">
       <textarea id="import-text" rows="5" spellcheck="false" style="font-size:12.5px;resize:vertical"
-        placeholder="Paste the contents of an exported .json file here, then press Load."></textarea>
+        placeholder="Choose a downloaded .json file below, or paste its contents here, then press Load."></textarea>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button id="pick-file">Choose file</button>
+        <input id="file-input" type="file" accept=".json,application/json" hidden>
         <button id="do-import">Load</button>
         <span id="import-msg" style="font-size:13px;color:var(--text-3)"></span>
       </div>
@@ -663,6 +665,25 @@ $("add").addEventListener("click",()=>{ roster.push({pet:"Future SR / mythic pet
 $("show-import").addEventListener("click",()=>{
   const b=$("import-box"); b.hidden=!b.hidden;
   if(!b.hidden){ $("d-save").open=true; $("import-text").focus(); }
+});
+// Export downloads a real file, so import should accept one back rather than
+// making the player open it in an editor to copy the text out.
+$("pick-file").addEventListener("click",()=>$("file-input").click());
+$("file-input").addEventListener("change",async ()=>{
+  const f=$("file-input").files[0];
+  const m=$("import-msg");
+  if(f){
+    try{
+      const txt=await f.text();
+      $("import-text").value=txt;
+      applyState(JSON.parse(txt)); render();
+      m.style.color="var(--good)"; m.textContent=`Loaded ${f.name}.`;
+    }catch(err){
+      m.style.color="var(--bad)"; m.textContent="That file isn't a valid loadout.";
+    }
+  }
+  // Cleared so picking the same file again still fires a change event.
+  $("file-input").value="";
 });
 $("do-import").addEventListener("click",()=>{
   const m=$("import-msg");

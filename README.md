@@ -51,8 +51,8 @@ ISA.md                         why it's built this way — design rationale, cla
 
 The page opens empty — zeroed materials and no pets — so nobody mistakes
 someone else's figures for their own. To see it working straight away, open
-**Paste a saved loadout**, drop in the contents of
-`examples/sample-loadout.json` and press Load. It carries a mid-game account
+**Import saved JSON**, pick `examples/sample-loadout.json` with **Choose
+file** (or paste its contents into the box) and press Load. It carries a mid-game account
 with three pets sitting un-ascended on milestones, which is the case worth
 understanding: those Advances cost no further Pet Food.
 
