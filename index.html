@@ -384,7 +384,8 @@ const splitFor=(gm,np,pm,h)=>({cg:Math.ceil(Math.max(0,gm-h.gm)/7), cn:Math.ceil
 
 function solve(){
   const h=have(), budget=chestBudget();
-  const lists=roster.map(p=>owedStages(p.pet,p.lvl,p.adv));
+  // Unchecked pets get no stages, so they stay in place (indexes line up with roster) but never enter a plan.
+  const lists=roster.map(p=>p.on===false?[]:owedStages(p.pet,p.lvl,p.adv));
   const n=lists.length, pick=new Array(n).fill(0);
   let best={A:null,Z:null,B:null};
   const better=(a,b)=>{ if(!b) return true; for(let i=0;i<a.length;i++){ if(a[i]!==b[i]) return a[i]>b[i]; } return false; };
@@ -517,7 +518,7 @@ function render(){
 
   const freebies=[];
   roster.forEach(p=>{
-    if(p.lvl%10!==0||p.adv) return;
+    if(p.on===false||p.lvl%10!==0||p.adv) return;
     const st=owedStages(p.pet,p.lvl,p.adv)[0];
     if(st&&st.food===0) freebies.push({name:p.pet,st,chests:chestsFor(st.gm,st.np,st.pm,h)});
   });
@@ -538,7 +539,7 @@ function render(){
       if(k>=lists[i].length) return;
       const st=lists[i][k];
       const gm=A.gm+st.gm, np=A.np+st.np, pm=A.pm+st.pm;
-      nxt.push({pet:active[i], to:st.to, food:A.food+st.food,
+      nxt.push({pet:roster[i], to:st.to, food:A.food+st.food,
                 chests:chestsFor(gm,np,pm,h)});
     });
     nxt.sort((a,b)=>(a.food-b.food)||(a.chests-b.chests));
