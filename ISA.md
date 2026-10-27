@@ -289,6 +289,20 @@ a silent transcription error would mis-price every Advance downstream.
 - 2026-09-13: Export writes a Blob through a synthetic `<a download>` rather
   than requesting a host download capability, so the button behaves the same
   from `file://`, GitHub Pages, or any static host.
+- 2026-10-27: Fixed the "Plan it?" checkbox (C6, C11). `solve()` built its
+  stage lists from every roster pet and never read `on`, so unchecking only
+  dimmed the row. Unchecked pets now get an empty stage list, which keeps
+  indexes aligned with `roster`. The "cheapest Advance nothing here can reach"
+  line indexed `active[i]` with a roster index and named the wrong pet once
+  one was unchecked; it now uses `roster[i]`. The no-food box skips unchecked
+  pets. Commit `1e064af`.
+- 2026-10-27: Level boxes commit on `change` (Enter, Tab, click away, spinner
+  arrows), not on every keystroke. Per-keystroke handling rebuilt the roster
+  table mid-edit and clamped the half-typed number, so typing "8" into a box
+  showing 31 produced 318, clamped to 100. Now: blank or junk restores the old
+  level, out of range snaps to 1..max, the whole value is selected on focus,
+  and `render()` restores focus to the same field after rebuilding the table.
+  Commit `bd125a7`.
 
 ## Learning
 
@@ -322,6 +336,14 @@ a silent transcription error would mis-price every Advance downstream.
   criterion now: the curve is documented with this caveat every place it is
   shown, rather than presented as a precise value measure (see Known
   Limits below, and README.md § Data).
+- conjectured: C6 and C11 ("Plan it?" removes a pet from every plan) were
+  done, checked by a manual run.
+  refuted by: on 2026-10-27, unchecking a pet on the live page left it in
+  every plan. A headless Chrome run over the sample loadout showed 5 of 6
+  unchecked pets still planned.
+  learned: a manual run that checks the row dims does not check the plan.
+  criterion now: C6/C11 are verified by unchecking each pet in turn and
+  asserting its name is absent from all three plans and the summary text.
 
 ## Verification
 
@@ -330,6 +352,13 @@ a silent transcription error would mis-price every Advance downstream.
 - C8–C12: manual run, opened `index.html` from disk with no server.
 - C13–C14: manual run, `python3 tools/solve.py --help` / `--list-pets`.
 - C15: manual cross-check, `tools/solve.py` against `index.html` for the example loadout.
+- C6, C11 (2026-10-27): headless Chrome, sample loadout, each pet unchecked
+  in turn. Old code 5 of 6 fail; new code 0 fail, locally and on the live page.
+- Level boxes (2026-10-27): puppeteer-core driving real key presses in
+  Chrome, 11 checks (type replaces, nothing moves mid-typing, Enter commits,
+  999 → max, 0 → 1, blank restores, focus survives Tab, ArrowUp steps). Old
+  code 6 of 11 fail; new code 11 of 11 pass, locally and on the live page.
+  Both harnesses were throwaway scripts and are not in the repo.
 
 ## Remaining Work
 
@@ -344,6 +373,8 @@ a silent transcription error would mis-price every Advance downstream.
 - [ ] No deploy workflow. Optional — the tool is a single static HTML file,
   so pointing GitHub Pages at the repository root is sufficient; a workflow
   only earns its place if a build step is ever introduced.
+- [ ] Level-box behavior (2026-10-27) is tested in Chrome only. Check Safari
+  and a phone: select-on-focus and Enter-to-commit differ most there.
 
 ## Known Limits
 
