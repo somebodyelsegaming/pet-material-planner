@@ -426,6 +426,9 @@ const OBJ_META=[
 ];
 
 function render(){
+  // The roster table is rebuilt below, which destroys whatever field had focus.
+  // Remember it so Tab from one level box to the next still lands somewhere.
+  const fa=document.activeElement, keep=fa&&fa.dataset&&fa.dataset.f!==undefined?`[data-i="${fa.dataset.i}"][data-f="${fa.dataset.f}"]`:null;
   const tb=$("roster"); tb.innerHTML="";
   if(!roster.length){
     const tr=document.createElement("tr");
@@ -452,6 +455,7 @@ function render(){
       <td class="r"><button class="ghost" data-del="${i}" aria-label="Remove ${p.pet}">×</button></td>`;
     tb.appendChild(tr);
   });
+  if(keep){ const el=tb.querySelector(keep); if(el){ el.focus(); if(el.dataset.f==="lvl") el.select(); } }
 
   const {best,lists,h,budget}=solve();
   const active=roster.filter(p=>p.on!==false);
@@ -658,12 +662,33 @@ document.addEventListener("input",e=>{
   if(t.id==="gen-pick"){ renderEff(); renderDim(); renderFuture(have(),chestBudget()); return; }
   if(t.dataset&&t.dataset.f!==undefined){
     const i=+t.dataset.i, f=t.dataset.f;
-    if(f==="lvl"){ roster[i].lvl=Math.max(1,Math.min(tableFor(roster[i].pet).max,+t.value||1)); }
+    // Levels commit on "change" (Enter, Tab, click away, spinner) below; reacting
+    // to every keystroke rebuilt the box mid-edit and clamped a half-typed number.
+    if(f==="lvl") return;
     else if(f==="adv"){ roster[i].adv=t.checked; }
     else if(f==="on"){ roster[i].on=t.checked; }
     else { roster[i].pet=t.value; roster[i].lvl=Math.min(roster[i].lvl,tableFor(t.value).max); }
   }
   render();
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(!(t.dataset&&t.dataset.f==="lvl")) return;
+  const i=+t.dataset.i, v=Math.round(+t.value);
+  // Blank or junk puts the old level back; anything out of range snaps to 1..max.
+  if(t.value.trim()!==""&&Number.isFinite(v))
+    roster[i].lvl=Math.max(1,Math.min(tableFor(roster[i].pet).max,v));
+  // Deferred so focus has already moved (Tab, click) before the table is rebuilt.
+  setTimeout(render,0);
+});
+document.addEventListener("keydown",e=>{
+  const t=e.target;
+  if(e.key==="Enter"&&t.dataset&&t.dataset.f==="lvl") t.blur();
+});
+// Selecting on focus means typing replaces "50" instead of adding to it.
+document.addEventListener("focusin",e=>{
+  const t=e.target;
+  if(t.dataset&&t.dataset.f==="lvl") t.select();
 });
 document.addEventListener("click",e=>{
   const d=e.target.dataset&&e.target.dataset.del;
